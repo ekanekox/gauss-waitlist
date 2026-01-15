@@ -1,16 +1,12 @@
 'use client'
 
-import { useEffect, ReactNode } from 'react'
+import { useEffect, ReactNode, Suspense } from 'react'
 import { usePathname, useSearchParams } from 'next/navigation'
 import { initPostHog, trackEvent, EVENTS } from '@/lib/posthog'
 
-export function PostHogProvider({ children }: { children: ReactNode }) {
+function PostHogPageView() {
   const pathname = usePathname()
   const searchParams = useSearchParams()
-
-  useEffect(() => {
-    initPostHog()
-  }, [])
 
   useEffect(() => {
     if (pathname) {
@@ -26,5 +22,20 @@ export function PostHogProvider({ children }: { children: ReactNode }) {
     }
   }, [pathname, searchParams])
 
-  return <>{children}</>
+  return null
+}
+
+export function PostHogProvider({ children }: { children: ReactNode }) {
+  useEffect(() => {
+    initPostHog()
+  }, [])
+
+  return (
+    <>
+      <Suspense fallback={null}>
+        <PostHogPageView />
+      </Suspense>
+      {children}
+    </>
+  )
 }
