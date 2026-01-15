@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="pt-BR" class="scroll-smooth">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Gauss - Diagnóstico certo de primeira</title>
+  <meta name="description" content="IA que ajuda mecânicos a identificar problemas mais rápido e com mais precisão. Entre na lista de espera.">
+  <meta name="theme-color" content="#ffffff">
+  <meta property="og:title" content="Gauss - Diagnóstico certo de primeira">
+  <meta property="og:description" content="IA que ajuda mecânicos a identificar problemas mais rápido e com mais precisão.">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://gauss.to">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            brand: { 50: '#eff6ff', 100: '#dbeafe', 200: '#bfdbfe', 300: '#93c5fd', 400: '#60a5fa', 500: '#3b82f6', 600: '#2563eb', 700: '#1d4ed8', 800: '#1e40af', 900: '#1e3a8a' },
+            surface: { 50: '#f8fafc', 100: '#f1f5f9', 200: '#e2e8f0', 300: '#cbd5e1', 400: '#94a3b8', 500: '#64748b', 600: '#475569', 700: '#334155', 800: '#1e293b', 900: '#0f172a' }
+          },
+          fontFamily: { sans: ['Barlow', 'system-ui', 'sans-serif'] },
+          animation: { 'fade-in': 'fadeIn 0.6s ease-out', 'slide-up': 'slideUp 0.6s ease-out', 'scale-in': 'scaleIn 0.2s ease-out', 'shake': 'shake 0.5s ease-in-out', 'pulse-glow': 'pulseGlow 2s ease-in-out infinite', 'float': 'float 6s ease-in-out infinite' }
+        }
+      }
+    }
+  </script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+    @keyframes slideUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+    @keyframes scaleIn { from { opacity: 0; transform: scale(0.95); } to { opacity: 1; transform: scale(1); } }
+    @keyframes shake { 0%, 100% { transform: translateX(0); } 10%, 30%, 50%, 70%, 90% { transform: translateX(-4px); } 20%, 40%, 60%, 80% { transform: translateX(4px); } }
+    @keyframes pulseGlow { 0%, 100% { opacity: 0.3; } 50% { opacity: 0.6; } }
+    @keyframes float { 0%, 100% { transform: translateY(0px); } 50% { transform: translateY(-20px); } }
+    @media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; } }
+    .gradient-text { background: linear-gradient(135deg, #2563eb 0%, #3b82f6 50%, #059669 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+    .glass-card { background: rgba(255, 255, 255, 0.8); backdrop-filter: blur(12px); border: 1px solid rgba(226, 232, 240, 0.8); }
+    .glass-card-solid { background: #ffffff; border: 1px solid #e2e8f0; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -2px rgba(0, 0, 0, 0.05); }
+    .glow-blue { box-shadow: 0 0 60px rgba(59, 130, 246, 0.15); }
+    .input-glow:focus { box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.2); }
+    .btn-press:active { transform: scale(0.98); }
+    .bg-blob { position: absolute; border-radius: 50%; filter: blur(100px); opacity: 0.4; pointer-events: none; }
+    .faq-content { max-height: 0; overflow: hidden; transition: max-height 0.3s ease-out; }
+    .faq-content.open { max-height: 500px; }
+    .modal-overlay { opacity: 0; visibility: hidden; transition: opacity 0.2s ease, visibility 0.2s ease; }
+    .modal-overlay.open { opacity: 1; visibility: visible; }
+    .toast { transform: translateX(100%); transition: transform 0.3s ease; }
+    .toast.show { transform: translateX(0); }
+    .confetti-particle { position: fixed; pointer-events: none; z-index: 9999; }
+    .card-hover { transition: transform 0.2s ease, box-shadow 0.2s ease; }
+    .card-hover:hover { transform: translateY(-4px); box-shadow: 0 20px 40px -12px rgba(0, 0, 0, 0.1); }
+  </style>
+</head>
+<body class="bg-surface-50 text-surface-800 font-sans antialiased">
+  <div class="fixed inset-0 overflow-hidden pointer-events-none">
+    <div class="bg-blob w-[800px] h-[800px] bg-brand-200 top-[-300px] left-[-300px] animate-float"></div>
+    <div class="bg-blob w-[600px] h-[600px] bg-emerald-200 bottom-[-200px] right-[-200px] animate-float" style="animation-delay: -3s;"></div>
+  </div>
+  <nav class="fixed top-0 left-0 right-0 z-50 bg-white/80 backdrop-blur-lg border-b border-surface-200">
+    <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="flex items-center justify-between h-16">
+        <div class="flex items-center gap-2">
+          <div class="w-9 h-9 rounded-xl bg-gradient-to-br from-brand-600 to-emerald-500 flex items-center justify-center shadow-lg shadow-brand-500/20">
+            <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"/></svg>
+          </div>
+          <span class="text-xl font-bold text-surface-900">Gauss</span>
+        </div>
+        <div class="flex items-center gap-4">
+          <span id="nav-count" class="hidden sm:flex items-center gap-2 text-sm text-surface-500"><span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span><span id="nav-count-number">0</span> na fila</span>
+          <a href="#waitlist" class="px-4 py-2 bg-brand-600 hover:bg-brand-700 text-white rounded-lg text-sm font-semibold transition-colors btn-press shadow-lg shadow-brand-500/20">Entrar na lista</a>
+        </div>
+      </div>
+    </div>
+  </nav>
+  <main class="relative z-10">
+    <section class="min-h-screen flex items-center pt-16">
+      <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-20">
+        <div class="grid lg:grid-cols-2 gap-12 items-center">
+          <div class="animate-fade-in">
+            <div class="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-brand-50 border border-brand-200 text-brand-700 text-sm font-medium mb-6"><span class="w-2 h-2 rounded-full bg-brand-500 animate-pulse"></span>Em desenvolvimento ativo</div>
+            <h1 class="text-4xl sm:text-5xl lg:text-6xl font-extrabold leading-tight mb-6 text-surface-900">Diagnóstico certo<span class="gradient-text"> de primeira</span></h1>
+            <p class="text-lg sm:text-xl text-surface-600 mb-8 max-w-lg leading-relaxed">IA que ajuda mecânicos a identificar problemas mais rápido e com mais precisão. Como ter um especialista em cada marca no seu bolso.</p>
+            <div class="flex flex-wrap gap-6 mb-8">
+              <div class="flex items-center gap-3"><div class="w-12 h-12 rounded-xl bg-brand-50 border border-brand-100 flex items-center justify-center"><svg class="w-6 h-6 text-brand-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg></div><div><div class="text-2xl font-bold text-surface-900">50%</div><div class="text-sm text-surface-500">mais rápido</div></div></div>
+              <div class="flex items-center gap-3"><div class="w-12 h-12 rounded-xl bg-emerald-50 border border-emerald-100 flex items-center justify-center"><svg class="w-6 h-6 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg></div><div><div class="text-2xl font-bold text-surface-900">30%</div><div class="text-sm text-surface-500">menos erro</div></div></div>
+            </div>
+            <a href="#waitlist" class="inline-flex items-center gap-2 px-6 py-3.5 bg-brand-600 hover:bg-brand-700 text-white rounded-xl text-lg font-semibold transition-all btn-press shadow-xl shadow-brand-500/25">Quero acesso antecipado<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3"/></svg></a>
+          </div>
+          <div class="relative animate-fade-in" style="animation-delay: 0.3s;">
+            <div class="glass-card-solid rounded-2xl p-6 glow-blue">
+              <div class="space-y-4">
+                <div class="flex items-center gap-3 pb-4 border-b border-surface-200"><div class="w-10 h-10 rounded-full bg-gradient-to-br from-brand-500 to-emerald-500 flex items-center justify-center shadow-lg"><svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"/></svg></div><div><div class="font-semibold text-surface-900">Gauss AI</div><div class="text-xs text-surface-500">Assistente de diagnóstico</div></div></div>
+                <div class="flex justify-end"><div class="bg-brand-600 rounded-2xl rounded-tr-md px-4 py-3 max-w-[80%] shadow-lg"><p class="text-sm text-white">Honda Civic 2015, barulho na suspensão ao passar em lombada, lado esquerdo</p></div></div>
+                <div class="flex justify-start"><div class="bg-surface-100 rounded-2xl rounded-tl-md px-4 py-3 max-w-[85%]"><p class="text-sm text-surface-700 mb-3">Baseado no sintoma, as causas mais prováveis são:</p><div class="space-y-2"><div class="flex items-center gap-2 text-sm"><span class="flex-shrink-0 w-6 h-6 rounded-full bg-emerald-100 text-emerald-700 flex items-center justify-center text-xs font-bold">1</span><span class="text-surface-800">Bucha da bandeja inferior (87%)</span></div><div class="flex items-center gap-2 text-sm"><span class="flex-shrink-0 w-6 h-6 rounded-full bg-amber-100 text-amber-700 flex items-center justify-center text-xs font-bold">2</span><span class="text-surface-800">Terminal de direção (62%)</span></div><div class="flex items-center gap-2 text-sm"><span class="flex-shrink-0 w-6 h-6 rounded-full bg-surface-200 text-surface-600 flex items-center justify-center text-xs font-bold">3</span><span class="text-surface-800">Batente do amortecedor (45%)</span></div></div><div class="mt-3 pt-3 border-t border-surface-200"><p class="text-xs text-surface-500">💡 Teste sugerido: balance o veículo com a mão na suspensão para localizar o ponto exato.</p></div></div></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+    <section id="waitlist" class="py-20">
+      <div class="max-w-xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="glass-card-solid rounded-3xl p-8 sm:p-10 glow-blue">
+          <div class="text-center mb-8"><h2 class="text-3xl sm:text-4xl font-bold mb-4 text-surface-900">Entre na lista de espera</h2><p class="text-surface-600">Vagas limitadas para o beta gratuito. Seja um dos primeiros a testar.</p></div>
+          <form id="waitlist-form" class="space-y-4" novalidate>
+            <div><label for="email" class="sr-only">Email</label><div class="relative"><input type="email" id="email" name="email" placeholder="seu@email.com" required autocomplete="email" class="w-full px-4 py-4 bg-surface-50 border border-surface-300 rounded-xl text-surface-900 placeholder-surface-400 focus:outline-none focus:border-brand-500 focus:bg-white input-glow transition-all"><div class="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none" id="email-icon"><svg class="w-5 h-5 text-surface-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg></div></div><p id="email-error" class="mt-2 text-sm text-red-500 hidden" role="alert" aria-live="polite"></p></div>
+            <button type="submit" id="submit-btn" class="w-full px-6 py-4 bg-brand-600 hover:bg-brand-700 disabled:bg-surface-300 disabled:cursor-not-allowed text-white rounded-xl text-lg font-semibold transition-all btn-press shadow-xl shadow-brand-500/25 flex items-center justify-center gap-2"><span id="btn-text">Garantir minha vaga</span><svg id="btn-arrow" class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3"/></svg><svg id="btn-spinner" class="w-5 h-5 animate-spin hidden" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg></button>
+          </form>
+          <div id="success-state" class="hidden text-center"><div class="w-20 h-20 rounded-full bg-emerald-100 flex items-center justify-center mx-auto mb-4"><svg class="w-10 h-10 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg></div><h3 class="text-2xl font-bold mb-2 text-surface-900">Você está na lista!</h3><p class="text-surface-600 mb-6">Vamos avisar assim que o beta estiver pronto.</p><div class="space-y-3"><button id="share-btn" class="w-full px-4 py-3 bg-surface-100 hover:bg-surface-200 rounded-xl text-sm font-medium text-surface-700 transition-colors flex items-center justify-center gap-2"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z"/></svg>Compartilhar</button><button id="add-another-btn" class="w-full px-4 py-3 text-sm font-medium text-surface-500 transition-colors">Adicionar outro email</button></div></div>
+          <div class="mt-6 pt-6 border-t border-surface-200"><div class="flex items-center justify-center gap-6 text-sm text-surface-500"><div class="flex items-center gap-2"><span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span><span><strong id="subscriber-count" class="text-surface-900">0</strong> na fila</span></div><div id="last-signup" class="hidden">Último: <span id="last-signup-time" class="text-surface-900"></span></div></div></div>
+        </div>
+        <p class="text-center text-xs text-surface-400 mt-4">🔒 Emails armazenados localmente neste navegador apenas.</p>
+      </div>
+    </section>
+  </main>
+  <footer class="py-8 border-t border-surface-200 bg-white"><div class="max-w-6xl mx-auto px-4 text-center text-sm text-surface-500">© 2025 Gauss</div></footer>
+  <div id="admin-modal" class="modal-overlay fixed inset-0 z-50 flex items-center justify-center p-4"><div class="absolute inset-0 bg-surface-900/50 backdrop-blur-sm" id="admin-modal-backdrop"></div><div class="relative w-full max-w-4xl max-h-[90vh] bg-white rounded-2xl shadow-2xl overflow-hidden animate-scale-in"><div class="flex items-center justify-between p-4 border-b border-surface-200"><div><h3 class="text-lg font-semibold text-surface-900">Admin - Lista de Emails</h3><p class="text-xs text-surface-500">⚠️ Client-side only</p></div><button id="admin-close" class="p-2 hover:bg-surface-100 rounded-lg"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg></button></div><div class="p-4 overflow-y-auto max-h-[calc(90vh-140px)]"><div class="flex flex-wrap gap-3 mb-4"><input type="text" id="admin-search" placeholder="Buscar..." class="flex-1 min-w-[200px] px-3 py-2 bg-surface-50 border border-surface-300 rounded-lg text-sm"><select id="admin-sort" class="px-3 py-2 bg-surface-50 border border-surface-300 rounded-lg text-sm"><option value="newest">Mais recentes</option><option value="oldest">Mais antigos</option><option value="alpha">A-Z</option></select><button id="copy-emails-btn" class="px-3 py-2 bg-surface-100 hover:bg-surface-200 rounded-lg text-sm font-medium">Copiar</button><button id="export-csv-btn" class="px-3 py-2 bg-brand-600 hover:bg-brand-700 text-white rounded-lg text-sm font-medium">CSV</button></div><div class="text-sm text-surface-500 mb-4">Total: <strong id="admin-total" class="text-surface-900">0</strong></div><table class="w-full text-sm"><thead class="text-left text-surface-500 border-b"><tr><th class="pb-3">#</th><th class="pb-3">Email</th><th class="pb-3">Data</th><th class="pb-3">Ações</th></tr></thead><tbody id="admin-table-body"></tbody></table><div id="admin-empty" class="hidden text-center py-12 text-surface-400">Nenhum email ainda.</div></div><div class="flex items-center justify-between p-4 border-t border-surface-200 bg-surface-50"><button id="clear-all-btn" class="text-red-500 hover:bg-red-50 px-3 py-2 rounded-lg text-sm">Limpar todos</button><span class="text-xs text-surface-400">Ctrl+Shift+A</span></div></div></div>
+  <div id="password-modal" class="modal-overlay fixed inset-0 z-50 flex items-center justify-center p-4"><div class="absolute inset-0 bg-surface-900/50 backdrop-blur-sm" id="password-modal-backdrop"></div><div class="relative w-full max-w-sm bg-white rounded-2xl shadow-2xl p-6 animate-scale-in"><h3 class="text-lg font-semibold mb-4">Acesso Admin</h3><input type="password" id="admin-password" placeholder="Senha" class="w-full px-4 py-3 bg-surface-50 border border-surface-300 rounded-xl mb-4"><div class="flex gap-3"><button id="password-cancel" class="flex-1 px-4 py-2 bg-surface-100 rounded-lg">Cancelar</button><button id="password-submit" class="flex-1 px-4 py-2 bg-brand-600 text-white rounded-lg">Entrar</button></div></div></div>
+  <div id="toast-container" class="fixed bottom-4 right-4 z-50 space-y-2"></div>
+  <script>
+    const CONFIG = { POSTHOG_API_KEY: 'POSTHOG_API_KEY', POSTHOG_HOST: 'https://us.i.posthog.com', ADMIN_PASSWORD: 'gauss2025', STORAGE_KEY: 'gauss_waitlist_v1', SHARE_URL: 'https://gauss.to', SHARE_TEXT: 'Gauss - IA para diagnóstico automotivo' };
+    !function(t,e){var o,n,p,r;e.__SV||(window.posthog=e,e._i=[],e.init=function(i,s,a){function g(t,e){var o=e.split(".");2==o.length&&(t=t[o[0]],e=o[1]),t[e]=function(){t.push([e].concat(Array.prototype.slice.call(arguments,0)))}}(p=t.createElement("script")).type="text/javascript",p.async=!0,p.src=s.api_host+"/static/array.js",(r=t.getElementsByTagName("script")[0]).parentNode.insertBefore(p,r);var u=e;for(void 0!==a?u=e[a]=[]:a="posthog",u.people=u.people||[],u.toString=function(t){var e="posthog";return"posthog"!==a&&(e+="."+a),t||(e+=" (stub)"),e},u.people.toString=function(){return u.toString(1)+".people (stub)"},o="capture identify alias people.set people.set_once set_config register register_once unregister opt_out_capturing has_opted_out_capturing opt_in_capturing reset isFeatureEnabled onFeatureFlags getFeatureFlag getFeatureFlagPayload reloadFeatureFlags group updateEarlyAccessFeatureEnrollment getEarlyAccessFeatures getActiveMatchingSurveys getSurveys onSessionId".split(" "),n=0;n<o.length;n++)g(u,o[n]);e._i.push([i,s,a])},e.__SV=1)}(document,window.posthog||[]);
+    if(CONFIG.POSTHOG_API_KEY!=='POSTHOG_API_KEY'){posthog.init(CONFIG.POSTHOG_API_KEY,{api_host:CONFIG.POSTHOG_HOST,capture_pageview:false});posthog.capture('waitlist_page_view',{referrer:document.referrer});}
+    function trackEvent(n,p={}){if(CONFIG.POSTHOG_API_KEY!=='POSTHOG_API_KEY'&&window.posthog)posthog.capture(n,p);console.log('[Analytics]',n,p);}
+    const Storage={isAvailable(){try{const t='__t__';localStorage.setItem(t,t);localStorage.removeItem(t);return true;}catch(e){return false;}},getSubscribers(){if(!this.isAvailable())return[];try{const d=localStorage.getItem(CONFIG.STORAGE_KEY);return d?JSON.parse(d):[];}catch(e){return[];}},saveSubscriber(email){if(!this.isAvailable())throw new Error('storage');const subs=this.getSubscribers();if(subs.some(s=>s.email.toLowerCase()===email.toLowerCase()))throw new Error('duplicate');subs.push({email:email.toLowerCase().trim(),createdAt:new Date().toISOString()});localStorage.setItem(CONFIG.STORAGE_KEY,JSON.stringify(subs));return subs.length;},clearAll(){if(this.isAvailable())localStorage.removeItem(CONFIG.STORAGE_KEY);},deleteSubscriber(email){if(!this.isAvailable())return;const subs=this.getSubscribers().filter(s=>s.email.toLowerCase()!==email.toLowerCase());localStorage.setItem(CONFIG.STORAGE_KEY,JSON.stringify(subs));}};
+    function showToast(msg,type='success'){const c=document.getElementById('toast-container');const t=document.createElement('div');t.className='toast bg-white border shadow-lg rounded-lg px-4 py-3 flex items-center gap-3 min-w-[250px]';const icon=type==='success'?'<svg class="w-5 h-5 text-emerald-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>':'<svg class="w-5 h-5 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>';t.innerHTML=icon+'<span class="text-sm">'+msg+'</span>';c.appendChild(t);requestAnimationFrame(()=>t.classList.add('show'));setTimeout(()=>{t.classList.remove('show');setTimeout(()=>t.remove(),300);},3000);}
+    function formatDate(iso){const d=new Date(iso),now=new Date(),diff=now-d;const mins=Math.floor(diff/60000),hrs=Math.floor(diff/3600000),days=Math.floor(diff/86400000);if(mins<1)return'agora';if(mins<60)return mins+'min';if(hrs<24)return hrs+'h';if(days<7)return days+'d';return d.toLocaleDateString('pt-BR');}
+    function formatDateFull(iso){return new Date(iso).toLocaleDateString('pt-BR',{day:'2-digit',month:'2-digit',year:'numeric',hour:'2-digit',minute:'2-digit'});}
+    function createConfetti(){const colors=['#3b82f6','#10b981','#f59e0b','#ec4899'];for(let i=0;i<30;i++){const p=document.createElement('div');p.className='confetti-particle';p.style.cssText='left:'+Math.random()*100+'vw;top:'+Math.random()*50+'vh;width:'+(Math.random()*8+4)+'px;height:'+(Math.random()*8+4)+'px;background:'+colors[Math.floor(Math.random()*colors.length)]+';border-radius:'+(Math.random()>.5?'50%':'0')+';animation:confetti 1s ease-out forwards;animation-delay:'+Math.random()*.5+'s;';document.body.appendChild(p);setTimeout(()=>p.remove(),1500);}}
+    function updateStats(){const subs=Storage.getSubscribers(),count=subs.length;document.getElementById('subscriber-count').textContent=count;document.getElementById('nav-count-number').textContent=count;if(count>0){document.getElementById('nav-count').classList.remove('hidden');const last=subs[subs.length-1];document.getElementById('last-signup-time').textContent=formatDate(last.createdAt);document.getElementById('last-signup').classList.remove('hidden');}}
+    const form=document.getElementById('waitlist-form'),emailInput=document.getElementById('email'),emailError=document.getElementById('email-error'),emailIcon=document.getElementById('email-icon'),submitBtn=document.getElementById('submit-btn'),btnText=document.getElementById('btn-text'),btnArrow=document.getElementById('btn-arrow'),btnSpinner=document.getElementById('btn-spinner'),successState=document.getElementById('success-state');
+    function validateEmail(e){return/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(e);}
+    function setFormError(msg){emailInput.classList.add('border-red-500','animate-shake');emailError.textContent=msg;emailError.classList.remove('hidden');emailIcon.innerHTML='<svg class="w-5 h-5 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>';setTimeout(()=>emailInput.classList.remove('animate-shake'),500);}
+    function clearFormError(){emailInput.classList.remove('border-red-500');emailError.classList.add('hidden');emailIcon.innerHTML='<svg class="w-5 h-5 text-surface-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg>';}
+    function setLoading(l){submitBtn.disabled=l;btnText.textContent=l?'Entrando...':'Garantir minha vaga';btnArrow.classList.toggle('hidden',l);btnSpinner.classList.toggle('hidden',!l);}
+    function showSuccess(){form.classList.add('hidden');successState.classList.remove('hidden');successState.classList.add('animate-scale-in');createConfetti();}
+    function resetForm(){form.classList.remove('hidden');successState.classList.add('hidden');emailInput.value='';clearFormError();}
+    emailInput.addEventListener('focus',()=>trackEvent('waitlist_form_start'));
+    emailInput.addEventListener('input',clearFormError);
+    form.addEventListener('submit',async(e)=>{e.preventDefault();const email=emailInput.value.trim();trackEvent('waitlist_submit_attempt');if(!email){setFormError('Digite seu email');return;}if(!validateEmail(email)){setFormError('Email inválido');return;}if(!Storage.isAvailable()){setFormError('Armazenamento não disponível');return;}setLoading(true);await new Promise(r=>setTimeout(r,600));try{Storage.saveSubscriber(email);trackEvent('waitlist_submit_success',{email_domain:email.split('@')[1]});updateStats();showSuccess();showToast('Você está na lista!');}catch(err){if(err.message==='duplicate'){setFormError('Email já cadastrado');}else{setFormError('Erro ao salvar');}}finally{setLoading(false);}});
+    document.getElementById('share-btn').addEventListener('click',async()=>{if(navigator.share){try{await navigator.share({title:'Gauss',text:CONFIG.SHARE_TEXT,url:CONFIG.SHARE_URL});}catch{}}else{await navigator.clipboard.writeText(CONFIG.SHARE_TEXT+' '+CONFIG.SHARE_URL);showToast('Link copiado!');}});
+    document.getElementById('add-another-btn').addEventListener('click',resetForm);
+    const adminModal=document.getElementById('admin-modal'),passwordModal=document.getElementById('password-modal'),adminPassword=document.getElementById('admin-password'),adminSearch=document.getElementById('admin-search'),adminSort=document.getElementById('admin-sort'),adminTableBody=document.getElementById('admin-table-body'),adminEmpty=document.getElementById('admin-empty'),adminTotal=document.getElementById('admin-total');let isAdminAuth=false;
+    function openPasswordModal(){passwordModal.classList.add('open');adminPassword.value='';adminPassword.focus();}
+    function closePasswordModal(){passwordModal.classList.remove('open');}
+    function openAdminModal(){adminModal.classList.add('open');trackEvent('waitlist_admin_opened');renderAdminTable();}
+    function closeAdminModal(){adminModal.classList.remove('open');}
+    function renderAdminTable(){let subs=Storage.getSubscribers();const search=adminSearch.value.toLowerCase(),sort=adminSort.value;if(search)subs=subs.filter(s=>s.email.includes(search));if(sort==='newest')subs.sort((a,b)=>new Date(b.createdAt)-new Date(a.createdAt));else if(sort==='oldest')subs.sort((a,b)=>new Date(a.createdAt)-new Date(b.createdAt));else if(sort==='alpha')subs.sort((a,b)=>a.email.localeCompare(b.email));adminTotal.textContent=Storage.getSubscribers().length;if(subs.length===0){adminTableBody.innerHTML='';adminEmpty.classList.remove('hidden');return;}adminEmpty.classList.add('hidden');adminTableBody.innerHTML=subs.map((s,i)=>'<tr class="border-b border-surface-100"><td class="py-3 text-surface-400">'+(i+1)+'</td><td class="py-3 font-mono text-sm">'+s.email+'</td><td class="py-3 text-surface-500 text-sm">'+formatDateFull(s.createdAt)+'</td><td class="py-3"><button onclick="copyEmail(\''+s.email+'\')" class="p-1 hover:bg-surface-200 rounded">📋</button><button onclick="deleteEmail(\''+s.email+'\')" class="p-1 hover:bg-red-50 rounded text-red-400">🗑</button></td></tr>').join('');}
+    window.copyEmail=async(email)=>{await navigator.clipboard.writeText(email);showToast('Copiado!');};
+    window.deleteEmail=(email)=>{if(confirm('Remover '+email+'?')){Storage.deleteSubscriber(email);renderAdminTable();updateStats();showToast('Removido');}};
+    document.addEventListener('keydown',(e)=>{if(e.ctrlKey&&e.shiftKey&&e.key==='A'){e.preventDefault();isAdminAuth?openAdminModal():openPasswordModal();}if(e.key==='Escape'){closeAdminModal();closePasswordModal();}});
+    document.getElementById('password-cancel').addEventListener('click',closePasswordModal);
+    document.getElementById('password-modal-backdrop').addEventListener('click',closePasswordModal);
+    document.getElementById('password-submit').addEventListener('click',()=>{if(adminPassword.value===CONFIG.ADMIN_PASSWORD){isAdminAuth=true;closePasswordModal();openAdminModal();}else{adminPassword.classList.add('border-red-500','animate-shake');setTimeout(()=>adminPassword.classList.remove('animate-shake'),500);}});
+    adminPassword.addEventListener('keydown',(e)=>{if(e.key==='Enter')document.getElementById('password-submit').click();});
+    document.getElementById('admin-close').addEventListener('click',closeAdminModal);
+    document.getElementById('admin-modal-backdrop').addEventListener('click',closeAdminModal);
+    adminSearch.addEventListener('input',renderAdminTable);
+    adminSort.addEventListener('change',renderAdminTable);
+    document.getElementById('copy-emails-btn').addEventListener('click',async()=>{const subs=Storage.getSubscribers();await navigator.clipboard.writeText(subs.map(s=>s.email).join('\n'));trackEvent('waitlist_copy_emails',{count:subs.length});showToast(subs.length+' emails copiados!');});
+    document.getElementById('export-csv-btn').addEventListener('click',()=>{const subs=Storage.getSubscribers();const csv='email,createdAt\n'+subs.map(s=>s.email+','+s.createdAt).join('\n');const blob=new Blob([csv],{type:'text/csv'});const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='gauss-waitlist-'+new Date().toISOString().split('T')[0]+'.csv';a.click();trackEvent('waitlist_export_csv',{count:subs.length});showToast('CSV exportado!');});
+    document.getElementById('clear-all-btn').addEventListener('click',()=>{const count=Storage.getSubscribers().length;if(count===0){showToast('Lista vazia','error');return;}if(confirm('Remover '+count+' emails?')){Storage.clearAll();renderAdminTable();updateStats();showToast('Lista limpa');}});
+    document.addEventListener('DOMContentLoaded',()=>{updateStats();if(!Storage.isAvailable())showToast('Armazenamento não disponível','error');});
+    document.querySelectorAll('a[href^="#"]').forEach(a=>{a.addEventListener('click',function(e){e.preventDefault();document.querySelector(this.getAttribute('href'))?.scrollIntoView({behavior:'smooth'});});});
+  </script>
+</body>
+</html>
